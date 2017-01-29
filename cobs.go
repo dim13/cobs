@@ -23,16 +23,16 @@ func EncodedSize(n int) int {
 // Encode a slice of bytes to a null-terminated frame
 func Encode(p []byte) []byte {
 	buf := new(bytes.Buffer)
-	block := func(p []byte) {
+	writeBlock := func(p []byte) {
 		buf.WriteByte(byte(len(p) + 1))
 		buf.Write(p)
 	}
 	for _, ch := range bytes.Split(p, []byte{0}) {
 		for len(ch) > 0xfe {
-			block(ch[:0xfe])
+			writeBlock(ch[:0xfe])
 			ch = ch[0xfe:]
 		}
-		block(ch)
+		writeBlock(ch)
 	}
 	buf.WriteByte(0)
 	return buf.Bytes()
