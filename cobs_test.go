@@ -247,7 +247,7 @@ func TestCobs(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		t.Run(fmt.Sprint(tc.raw), func(t *testing.T) {
+		t.Run(name(tc.raw), func(t *testing.T) {
 			enc := Encode(tc.raw)
 			dec := Decode(enc)
 			if !bytes.Equal(enc, tc.enc) {
@@ -265,7 +265,7 @@ func TestDecodeBogus(t *testing.T) {
 		[]byte{1, 255, 0},
 	}
 	for _, tc := range testCases {
-		t.Run(fmt.Sprint(tc), func(t *testing.T) {
+		t.Run(name(tc), func(t *testing.T) {
 			if raw := Decode(tc); raw != nil {
 				t.Errorf("got %v, want nil", raw)
 			}
@@ -282,4 +282,12 @@ func TestRandom(t *testing.T) {
 	if err := quick.Check(f, nil); err != nil {
 		t.Error(err)
 	}
+}
+
+func name(args ...interface{}) string {
+	s := fmt.Sprint(args...)
+	if len(s) > 30 {
+		return s[:30] + "..." + s[len(s)-10:]
+	}
+	return s
 }
