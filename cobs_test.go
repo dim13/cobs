@@ -247,17 +247,11 @@ func TestCobs(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("Encode %v", tc.raw), func(t *testing.T) {
+		t.Run(fmt.Sprint(tc.raw), func(t *testing.T) {
 			enc := Encode(tc.raw)
+			dec := Decode(enc)
 			if !bytes.Equal(enc, tc.enc) {
-				t.Errorf("got %v, want %v", enc, tc.enc)
-			}
-		})
-		t.Run(fmt.Sprintf("Decode %v", tc.enc), func(t *testing.T) {
-			//t.SkipNow()
-			raw := Decode(tc.enc)
-			if !bytes.Equal(raw, tc.raw) {
-				t.Errorf("got %v, want %v", raw, tc.raw)
+				t.Errorf("got %v, want %v", dec, tc.raw)
 			}
 		})
 	}
@@ -279,12 +273,11 @@ func TestDecodeBogus(t *testing.T) {
 	}
 }
 
-func TestQuick(t *testing.T) {
-	f := func(p []byte) bool {
-		enc := Encode(p)
-		i := bytes.IndexByte(enc, 0)
+func TestRandom(t *testing.T) {
+	f := func(raw []byte) bool {
+		enc := Encode(raw)
 		dec := Decode(enc)
-		return i == len(enc)-1 && bytes.Equal(dec, p)
+		return bytes.Equal(dec, raw)
 	}
 	if err := quick.Check(f, nil); err != nil {
 		t.Error(err)
