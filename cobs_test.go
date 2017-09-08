@@ -259,10 +259,10 @@ func TestCobs(t *testing.T) {
 
 func TestDecodeBogus(t *testing.T) {
 	testCases := [][]byte{
-		[]byte{},
-		[]byte{0},
-		[]byte{255, 0},
-		[]byte{1, 255, 0},
+		{},
+		{0},
+		{255, 0},
+		{1, 255, 0},
 	}
 	for _, tc := range testCases {
 		t.Run(name(tc), func(t *testing.T) {
