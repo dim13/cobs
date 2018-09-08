@@ -39,18 +39,18 @@ func Encode(p []byte) []byte {
 }
 
 // Decode a null-terminated frame to a slice of bytes
-func Decode(b []byte) []byte {
-	if len(b) == 0 {
+func Decode(p []byte) []byte {
+	if len(p) == 0 {
 		return nil
 	}
 	buf := new(bytes.Buffer)
-	for n := b[0]; n > 0; n = b[0] {
-		if int(n) >= len(b) {
+	for n := p[0]; n > 0; n = p[0] {
+		if int(n) >= len(p) {
 			return nil
 		}
-		buf.Write(b[1:n])
-		b = b[n:]
-		if n < 0xff && b[0] > 0 {
+		buf.Write(p[1:n])
+		p = p[n:]
+		if n < 0xff && p[0] > 0 {
 			buf.WriteByte(0)
 		}
 	}
