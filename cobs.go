@@ -28,7 +28,7 @@ func Encode(p []byte) []byte {
 		buf.Write(p)
 	}
 	for _, ch := range bytes.Split(p, []byte{0}) {
-		for len(ch) > 0xfe {
+		for len(ch) >= 0xfe {
 			writeBlock(ch[:0xfe])
 			ch = ch[0xfe:]
 		}

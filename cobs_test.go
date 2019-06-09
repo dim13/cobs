@@ -250,7 +250,7 @@ func TestCobs(t *testing.T) {
 		t.Run(name(tc.raw), func(t *testing.T) {
 			enc := Encode(tc.raw)
 			dec := Decode(enc)
-			if !bytes.Equal(enc, tc.enc) {
+			if !bytes.Equal(dec, tc.raw) {
 				t.Errorf("got %v, want %v", dec, tc.raw)
 			}
 		})
@@ -281,6 +281,23 @@ func TestRandom(t *testing.T) {
 	}
 	if err := quick.Check(f, nil); err != nil {
 		t.Error(err)
+	}
+}
+
+func TestEdgeCase(t *testing.T) {
+	var raw []byte
+	for i := byte(1); i <= 0xfe; i++ {
+		raw = append(raw, i)
+	}
+
+	// extra zero
+	raw = append(raw, 0)
+
+	enc := Encode(raw)
+	dec := Decode(enc)
+
+	if bytes.Equal(dec, raw) == false {
+		t.Fatal("edge scenario failed")
 	}
 }
 
