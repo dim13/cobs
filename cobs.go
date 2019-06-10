@@ -17,7 +17,7 @@ import "bytes"
 
 // EncodedSize calculates size of encoded message
 func EncodedSize(n int) int {
-	return n + n/254 + 1
+	return n + n/256
 }
 
 // Encode a null-terminated slice of bytes to a cobs frame

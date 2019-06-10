@@ -9,6 +9,7 @@ import (
 func TestCobs(t *testing.T) {
 	testCases := []struct {
 		title    string
+		size     int
 		dec, enc []byte
 	}{
 		{
@@ -21,31 +22,37 @@ func TestCobs(t *testing.T) {
 		},
 		{
 			title: "fig.1/zero",
+			size:  1,
 			dec:   []byte{0x00},
 			enc:   []byte{0x01},
 		},
 		{
 			title: "fig.1/x",
+			size:  2,
 			dec:   []byte{'x', 0x00},
 			enc:   []byte{0x02, 'x'},
 		},
 		{
 			title: "fig.1/xy",
+			size:  3,
 			dec:   []byte{'x', 'y', 0x00},
 			enc:   []byte{0x03, 'x', 'y'},
 		},
 		{
 			title: "fig.1/Hello World",
+			size:  12,
 			dec:   []byte{'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', 0x00},
 			enc:   []byte{0x0c, 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd'},
 		},
 		{
 			title: "fig.3",
+			size:  13,
 			dec:   []byte{0x45, 0x00, 0x00, 0x2C, 0x4C, 0x79, 0x00, 0x00, 0x40, 0x06, 0x4F, 0x37, 0x00},
 			enc:   []byte{0x02, 0x45, 0x01, 0x04, 0x2C, 0x4C, 0x79, 0x01, 0x05, 0x40, 0x06, 0x4F, 0x37},
 		},
 		{
 			title: "fig.2/oversized/680",
+			size:  682,
 			dec: []byte{
 				'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
 				'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
@@ -143,6 +150,7 @@ func TestCobs(t *testing.T) {
 		},
 		{
 			title: "boundary/252+zero",
+			size:  254,
 			dec: []byte{
 				'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
 				'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
@@ -186,6 +194,7 @@ func TestCobs(t *testing.T) {
 		},
 		{
 			title: "boundary/253+zero",
+			size:  255,
 			dec: []byte{
 				'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
 				'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
@@ -229,6 +238,7 @@ func TestCobs(t *testing.T) {
 		},
 		{
 			title: "boundary/254+zero",
+			size:  257,
 			dec: []byte{
 				'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
 				'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
@@ -273,6 +283,7 @@ func TestCobs(t *testing.T) {
 		},
 		{
 			title: "boundary/255+zero",
+			size:  258,
 			dec: []byte{
 				'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
 				'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
@@ -328,6 +339,12 @@ func TestCobs(t *testing.T) {
 			dec := Decode(tc.enc)
 			if !bytes.Equal(dec, tc.dec) {
 				t.Errorf("got %v, want %v", dec, tc.dec)
+			}
+		})
+		t.Run("size/"+tc.title, func(t *testing.T) {
+			size := EncodedSize(len(tc.dec))
+			if size != tc.size {
+				t.Errorf("got %v, want %v", size, tc.size)
 			}
 		})
 	}
