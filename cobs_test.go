@@ -363,12 +363,16 @@ func TestDecodeInvalid(t *testing.T) {
 			data:  []byte{0},
 		},
 		{
-			title: "first oversized length",
-			data:  []byte{255, 0},
+			title: "one off",
+			data:  []byte{0x03, 'x'},
 		},
 		{
-			title: "second oversized length",
-			data:  []byte{1, 255, 0},
+			title: "oversized block",
+			data:  []byte{255, 'x'},
+		},
+		{
+			title: "second oversized block",
+			data:  []byte{1, 255, 'x'},
 		},
 	}
 	for _, tc := range testCases {
