@@ -1,7 +1,7 @@
 # Consistent Overhead Byte Stuffing
 
-[![Build Status](https://travis-ci.org/dim13/cobs.svg?branch=master)](https://travis-ci.org/dim13/cobs)
 [![GoDoc](https://godoc.org/github.com/dim13/cobs?status.svg)](https://godoc.org/github.com/dim13/cobs)
+[![Build](https://github.com/dim13/cobs/workflows/build/badge.svg)](https://github.com/dim13/cobs/actions)
 
 COBS encoder breaks a packet into one or more sequences of non-zero
 bytes.  The encoding routine searches through the first 254 bytes of
