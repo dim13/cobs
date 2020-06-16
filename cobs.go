@@ -25,7 +25,7 @@ func Encode(p []byte) []byte {
 	if len(p) == 0 {
 		return nil
 	}
-	// pad inital message with zero, if missing
+	// pad initial message with zero, if missing
 	if p[len(p)-1] != 0 {
 		p = append(p, 0)
 	}
