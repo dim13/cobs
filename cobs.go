@@ -13,64 +13,48 @@
 // See also: http://www.stuartcheshire.org/papers/COBSforToN.pdf
 package cobs
 
-import "bytes"
-
 // EncodedSize calculates size of encoded message
 func EncodedSize(n int) int {
 	return n + n/256
 }
 
 // Encode a null-terminated slice of bytes to a cobs frame
-func Encode(p []byte) []byte {
-	if len(p) == 0 {
-		return nil
-	}
-	// pad initial message with zero, if missing
-	if p[len(p)-1] != 0 {
-		p = append(p, 0)
-	}
-	var buf bytes.Buffer
-	for {
-		i := bytes.IndexByte(p, 0)
-		// no more zeros, we are done
-		if i < 0 {
-			return buf.Bytes()
+func Encode(p []byte) (b []byte) {
+	var x [0xff]byte
+	x[0] = 1
+	for _, v := range p {
+		if v == 0 {
+			b = append(b, x[:x[0]]...)
+			x[0] = 1
+		} else {
+			x[x[0]] = v
+			x[0]++
+			if x[0] == 0xff {
+				b = append(b, x[:x[0]]...)
+				x[0] = 1
+			}
 		}
-		// split oversized chunks
-		for i >= 254 {
-			buf.WriteByte(255)
-			buf.Write(p[:254])
-			p = p[254:]
-			i -= 254
-		}
-		// write rest of the chunk
-		buf.WriteByte(byte(i + 1))
-		buf.Write(p[:i])
-		p = p[i+1:]
 	}
+	if x[0] > 1 {
+		b = append(b, x[:x[0]]...)
+	}
+	return b
 }
 
 // Decode a cobs frame to a null-terminated slice of bytes
-func Decode(p []byte) []byte {
-	if len(p) == 0 {
-		return nil
-	}
-	var buf bytes.Buffer
-	for {
-		// nothing left, we are done
-		if len(p) == 0 {
-			return buf.Bytes()
-		}
-		n, body := p[0], p[1:]
+func Decode(p []byte) (b []byte) {
+	for len(p) > 0 {
+		n, data := p[0], p[1:]
 		// invalid frame, abort
-		if int(n-1) > len(body) || n == 0 {
-			return nil
+		if int(n-1) > len(data) || n == 0 {
+			return b
 		}
-		buf.Write(body[:n-1])
+		b = append(b, data[:n-1]...)
 		// full blocks are not followed by zero
 		if n < 255 {
-			buf.WriteByte(0)
+			b = append(b, 0)
 		}
 		p = p[n:]
 	}
+	return b
 }

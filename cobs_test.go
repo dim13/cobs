@@ -327,21 +327,31 @@ var testCases = []struct {
 	},
 }
 
-func TestCobs(t *testing.T) {
+func TestEncode(t *testing.T) {
 	for _, tc := range testCases {
-		t.Run("encode/"+tc.title, func(t *testing.T) {
+		t.Run(tc.title, func(t *testing.T) {
 			enc := Encode(tc.dec)
 			if !bytes.Equal(enc, tc.enc) {
 				t.Errorf("got %v, want %v", enc, tc.enc)
 			}
 		})
-		t.Run("decode/"+tc.title, func(t *testing.T) {
+	}
+}
+
+func TestDecode(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
 			dec := Decode(tc.enc)
 			if !bytes.Equal(dec, tc.dec) {
 				t.Errorf("got %v, want %v", dec, tc.dec)
 			}
 		})
-		t.Run("size/"+tc.title, func(t *testing.T) {
+	}
+}
+
+func TestSize(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.title, func(t *testing.T) {
 			size := EncodedSize(len(tc.dec))
 			if size != tc.size {
 				t.Errorf("got %v, want %v", size, tc.size)
@@ -355,9 +365,7 @@ func FuzzCobs(f *testing.F) {
 		f.Add(tc.dec)
 	}
 	f.Fuzz(func(t *testing.T, p []byte) {
-		if len(p) == 0 || p[len(p)-1] != 0 {
-			p = append(p, 0) // zero-terminate input
-		}
+		p = append(p, 0) // zero-terminate input
 		e := Encode(p)
 		if i := bytes.IndexByte(e, 0); i != -1 {
 			t.Errorf("got zero: %v at %d", e, i)
