@@ -2,6 +2,7 @@ package cobs
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 )
 
@@ -365,7 +366,7 @@ func FuzzCobs(f *testing.F) {
 		f.Add(tc.dec)
 	}
 	f.Fuzz(func(t *testing.T, p []byte) {
-		p = append(p, 0) // zero-terminate input
+		p = Terminate(p)
 		e := Encode(p)
 		if i := bytes.IndexByte(e, 0); i != -1 {
 			t.Errorf("got zero: %v at %d", e, i)
@@ -375,4 +376,15 @@ func FuzzCobs(f *testing.F) {
 			t.Errorf("in %v out %v", p, d)
 		}
 	})
+}
+
+func ExampleEncode() {
+	data := "Hello"
+	encoded := Encode(Terminate([]byte(data)))
+	fmt.Printf("%v: %v\n", data, encoded)
+	decoded := TrimNull(Decode(encoded))
+	fmt.Printf("%v: %v\n", encoded, string(decoded))
+	// Output:
+	// Hello: [6 72 101 108 108 111]
+	// [6 72 101 108 108 111]: Hello
 }

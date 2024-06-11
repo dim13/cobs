@@ -18,6 +18,22 @@ func EncodedSize(n int) int {
 	return n + n/256
 }
 
+// Terminate a byte slice with null
+func Terminate(p []byte) []byte {
+	if len(p) > 0 && p[len(p)-1] == 0 {
+		return p
+	}
+	return append(p, 0)
+}
+
+// TrimNull removes null-termination
+func TrimNull(p []byte) []byte {
+	if len(p) > 0 && p[len(p)-1] == 0 {
+		return p[:len(p)-1]
+	}
+	return p
+}
+
 // Encode a null-terminated slice of bytes to a cobs frame
 func Encode(p []byte) (b []byte) {
 	var x [0xff]byte
