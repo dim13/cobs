@@ -388,3 +388,42 @@ func ExampleEncode() {
 	// Hello: [6 72 101 108 108 111]
 	// [6 72 101 108 108 111]: Hello
 }
+
+func benchmarkEncode(i int, b *testing.B) {
+	data := make([]byte, i)
+	for i := range data {
+		data[i] = byte(i % 255)
+	}
+	data[len(data)-1] = 0 // zero-terminate input
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Encode(data)
+	}
+}
+
+func benchmarkDecode(i int, b *testing.B) {
+	data := make([]byte, i)
+	for i := range data {
+		data[i] = byte(i % 255)
+	}
+	data[len(data)-1] = 0 // zero-terminate input
+	enc := Encode(data)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Decode(enc)
+	}
+}
+
+func BenchmarkCobs(b *testing.B) {
+	cases := []int{32, 256, 1024, 4096}
+	for _, c := range cases {
+		b.Run(fmt.Sprintf("%d/Encode", c), func(b *testing.B) {
+			benchmarkEncode(c, b)
+		})
+		b.Run(fmt.Sprintf("%d/Decode", c), func(b *testing.B) {
+			benchmarkDecode(c, b)
+		})
+	}
+}

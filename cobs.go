@@ -35,7 +35,9 @@ func TrimNull(p []byte) []byte {
 }
 
 // Encode a null-terminated slice of bytes to a cobs frame
-func Encode(p []byte) (b []byte) {
+func Encode(p []byte) []byte {
+	// preallocate output buffer with estimated size
+	b := make([]byte, 0, EncodedSize(len(p)))
 	var x [0xff]byte
 	x[0] = 1
 	for _, v := range p {
@@ -58,7 +60,9 @@ func Encode(p []byte) (b []byte) {
 }
 
 // Decode a cobs frame to a null-terminated slice of bytes
-func Decode(p []byte) (b []byte) {
+func Decode(p []byte) []byte {
+	// preallocate output buffer, data will be smaller than input
+	b := make([]byte, 0, len(p))
 	for len(p) > 0 {
 		n, data := p[0], p[1:]
 		// invalid frame, abort
