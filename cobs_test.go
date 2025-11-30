@@ -379,14 +379,17 @@ func FuzzCobs(f *testing.F) {
 }
 
 func ExampleEncode() {
-	data := "Hello"
-	encoded := Encode(Terminate([]byte(data)))
-	fmt.Printf("%v: %v\n", data, encoded)
-	decoded := TrimNull(Decode(encoded))
-	fmt.Printf("%v: %v\n", encoded, string(decoded))
+	data := []byte("Hello\x00World\x00")
+
+	enc := Encode(data)
+	fmt.Printf("Encode: % x → % x\n", data, enc)
+
+	dec := Decode(enc)
+	fmt.Printf("Decode: % x → % x\n", enc, dec)
+
 	// Output:
-	// Hello: [6 72 101 108 108 111]
-	// [6 72 101 108 108 111]: Hello
+	// Encode: 48 65 6c 6c 6f 00 57 6f 72 6c 64 00 → 06 48 65 6c 6c 6f 06 57 6f 72 6c 64
+	// Decode: 06 48 65 6c 6c 6f 06 57 6f 72 6c 64 → 48 65 6c 6c 6f 00 57 6f 72 6c 64 00
 }
 
 func benchmarkEncode(i int, b *testing.B) {
