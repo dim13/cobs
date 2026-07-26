@@ -8,7 +8,6 @@ import (
 
 var testCases = []struct {
 	title    string
-	size     int
 	dec, enc []byte
 }{
 	{
@@ -21,37 +20,31 @@ var testCases = []struct {
 	},
 	{
 		title: "fig.1/zero",
-		size:  1,
 		dec:   []byte{0x00},
 		enc:   []byte{0x01},
 	},
 	{
 		title: "fig.1/x",
-		size:  2,
 		dec:   []byte{'x', 0x00},
 		enc:   []byte{0x02, 'x'},
 	},
 	{
 		title: "fig.1/xy",
-		size:  3,
 		dec:   []byte{'x', 'y', 0x00},
 		enc:   []byte{0x03, 'x', 'y'},
 	},
 	{
 		title: "fig.1/Hello World",
-		size:  12,
 		dec:   []byte{'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', 0x00},
 		enc:   []byte{0x0c, 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd'},
 	},
 	{
 		title: "fig.3",
-		size:  13,
 		dec:   []byte{0x45, 0x00, 0x00, 0x2C, 0x4C, 0x79, 0x00, 0x00, 0x40, 0x06, 0x4F, 0x37, 0x00},
 		enc:   []byte{0x02, 0x45, 0x01, 0x04, 0x2C, 0x4C, 0x79, 0x01, 0x05, 0x40, 0x06, 0x4F, 0x37},
 	},
 	{
 		title: "fig.2/oversized/680",
-		size:  682,
 		dec: []byte{
 			'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
 			'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
@@ -149,7 +142,6 @@ var testCases = []struct {
 	},
 	{
 		title: "boundary/252+zero",
-		size:  254,
 		dec: []byte{
 			'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
 			'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
@@ -193,7 +185,6 @@ var testCases = []struct {
 	},
 	{
 		title: "boundary/253+zero",
-		size:  255,
 		dec: []byte{
 			'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
 			'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
@@ -237,7 +228,6 @@ var testCases = []struct {
 	},
 	{
 		title: "boundary/254+zero",
-		size:  257,
 		dec: []byte{
 			'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
 			'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
@@ -282,7 +272,6 @@ var testCases = []struct {
 	},
 	{
 		title: "boundary/255+zero",
-		size:  258,
 		dec: []byte{
 			'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
 			'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',
@@ -354,8 +343,67 @@ func TestSize(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.title, func(t *testing.T) {
 			size := EncodedSize(len(tc.dec))
-			if size != tc.size {
-				t.Errorf("got %v, want %v", size, tc.size)
+			if size < len(tc.enc) {
+				t.Errorf("got %v, want at least %v", size, len(tc.enc))
+			}
+		})
+	}
+}
+
+func TestSizeWorstCase(t *testing.T) {
+	for _, n := range []int{1, 253, 254, 255, 508, 509, 1500} {
+		data := make([]byte, n)
+		for i := range data {
+			data[i] = 1
+		}
+		got := len(Encode(data))
+		want := EncodedSize(n)
+		if got != want {
+			t.Errorf("%d: got %d, want %d", n, got, want)
+		}
+	}
+}
+
+func TestTrimNull(t *testing.T) {
+	cases := []struct {
+		title string
+		in    []byte
+		want  []byte
+	}{
+		{
+			title: "nil",
+		},
+		{
+			title: "empty",
+			in:    []byte{},
+			want:  []byte{},
+		},
+		{
+			title: "single zero",
+			in:    []byte{0x00},
+			want:  []byte{},
+		},
+		{
+			title: "trailing zero",
+			in:    []byte{'x', 'y', 0x00},
+			want:  []byte{'x', 'y'},
+		},
+		{
+			title: "no trailing zero",
+			in:    []byte{'x', 'y'},
+			want:  []byte{'x', 'y'},
+		},
+		{
+			title: "internal zero kept",
+			in:    []byte{'x', 0x00, 'y'},
+			want:  []byte{'x', 0x00, 'y'},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.title, func(t *testing.T) {
+			got := TrimNull(tc.in)
+			if !bytes.Equal(got, tc.want) {
+				t.Errorf("got %v, want %v", got, tc.want)
 			}
 		})
 	}

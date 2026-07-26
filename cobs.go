@@ -13,9 +13,9 @@
 // See also: http://www.stuartcheshire.org/papers/COBSforToN.pdf
 package cobs
 
-// EncodedSize calculates size of encoded message
+// EncodedSize returns the worst-case encoded size for n bytes of input
 func EncodedSize(n int) int {
-	return n + n/256
+	return n + (n+253)/254
 }
 
 // Terminate a byte slice with null
